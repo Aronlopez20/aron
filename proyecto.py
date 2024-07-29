@@ -54,4 +54,4 @@ if archivo_csv:
     except Exception as e:
         st.error(f"Ocurrió un error al procesar el archivo: {e}")
 else:
-    st.info("Por favor, sube un archivo CSV para comenzar.")
+    st.info("Por favor, sube un archivo CSV para comenzar")
