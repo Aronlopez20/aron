@@ -2,24 +2,27 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
 
 # Configuración de Streamlit
-st.title('Prediccion de Obesidad')
+st.title('Predicción de Obesidad')
 
-# Cargar el archivo CSV usando el cargador de archivos de Streamlit
-archivo_csv = st.file_uploader("Sube tu archivo CSV", type="csv")
+# Ruta al archivo CSV en la carpeta de descargas
+# Ajusta esta ruta según el sistema operativo y el nombre del archivo
+ruta_archivo = os.path.expanduser('~/Descargas/archive/obesity_data.csv')  # Para sistemas basados en Unix (Linux/Mac)
+# ruta_archivo = os.path.join(os.path.expanduser('~'), 'Downloads', 'archivo.csv')  # Alternativa para Windows
 
-if archivo_csv:
+if os.path.isfile(ruta_archivo):
     try:
         # Cargar los datos
-        data = pd.read_csv(archivo_csv)
+        data = pd.read_csv(ruta_archivo)
         
         # Mostrar las primeras filas del dataset
-        st.write(data.head())
+        st.write("Primeras filas del dataset:", data.head())
 
         # Seleccionar el número de filas para trabajar
         num_filas = st.slider('Selecciona el número de filas para analizar', 
-                              min_value=100, max_value=len(data), value=1000, step=100)
+                              min_value=100, max_value=len(data), value=min(1000, len(data)), step=100)
         data = data.head(num_filas)
 
         # Verificar columnas necesarias
@@ -46,7 +49,7 @@ if archivo_csv:
                     sns.histplot(data[x], bins=30, kde=True, color=color)
                 elif plot_type == 'pie':
                     counts = data[x].value_counts()
-                    plt.pie(counts.values, labels=counts.index, autopct='%1.1f%%', startangle=90)
+                    plt.pie(counts, labels=counts.index, autopct='%1.1f%%', startangle=90)
                     plt.axis('equal')
                 plt.title(title)
                 if plot_type != 'pie':
@@ -57,22 +60,12 @@ if archivo_csv:
                 st.pyplot(plt.gcf())
                 plt.close()
 
-            # Gráfico de distribución de edades
+            # Gráficos
             plot_and_show(data, 'Age', title='Distribución de Edades', xlabel='Edad', ylabel='Frecuencia', plot_type='hist', color='teal')
-
-            # Gráfico de distribución de género (Torta)
             plot_and_show(data, 'Gender', title='Distribución de Género', plot_type='pie')
-
-            # Gráfico de dispersión de Altura vs Peso con regresión lineal
             plot_and_show(data, 'Height', 'Weight', 'Relación entre Altura y Peso', 'Altura', 'Peso', 'scatter', 'green', regplot=True)
-
-            # Gráfico de distribución de BMI
             plot_and_show(data, 'BMI', title='Distribución de BMI', xlabel='BMI', ylabel='Frecuencia', plot_type='hist', color='orange')
-
-            # Gráfico de distribución de Nivel de Actividad Física (Torta)
             plot_and_show(data, 'PhysicalActivityLevel', title='Distribución de Nivel de Actividad Física', plot_type='pie')
-
-            # Gráfico de distribución de Categoría de Obesidad (Torta)
             plot_and_show(data, 'ObesityCategory', title='Distribución de Categoría de Obesidad', plot_type='pie')
 
     except pd.errors.EmptyDataError:
@@ -80,4 +73,4 @@ if archivo_csv:
     except Exception as e:
         st.error(f"Ocurrió un error al procesar el archivo: {e}")
 else:
-    st.info("Por favor, sube un archivo CSV para comenzar")
+    st.error(f"No se encontró el archivo en la ruta especificada: {ruta_archivo}")
